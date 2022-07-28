@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.0/font/bootstrap-icons.css"
+    />
+
+    <title>User</title>
+    <style>
+      .card {
+        height: 375px;
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+      }
+      .card-text1 {
+        height: 75px;
+        overflow: scroll;
+      }
+      .card-header {
+        text-align: center;
+        font-size: x-large;
+        overflow: hidden;
+        height: 45px;
+      }
+      .line {
+        height: 75vh;
+        overflow: scroll;
+      }
+      .luck {
+        height: 95vh;
+        display: inline-block;
+      }
+      .nav-item,
+      .navbar-text {
+        font-size: larger;
+      }
+      nav {
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+      }
+      .list-header {
+        font-size: larger;
+        font-weight: 500;
+      }
+      .modal {
+        font-weight: lighter;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+      crossorigin="anonymous"
+    ></script>
+    <nav
+      class="navbar navbar-expand-lg navbar-light bg-white py-1 px-3 sticky-top"
+    >
+      <a class="navbar-brand" href="#">
+        <img
+          src="/static/KANBAN3-removebg-preview.png"
+          alt=""
+          width="200"
+          height="70"
+          class="d-inline-block align-center"
+        />
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link active" href="/user/{{ user['user_id'] }}"
+              >Home <span class="sr-only"></span
+            ></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/user/{{ user['user_id'] }}/summary"
+              >Summary</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/api">API</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/">Logout</a>
+          </li>
+        </ul>
+      </div>
+      <span class="navbar-text mr-3">
+        <div class="container">
+          <a
+            class="nav-link p-2"
+            data-bs-toggle="modal"
+            data-bs-target="#Modal"
+            href=""
+            >Add List</a
+          >
+        </div>
+      </span>
+
+      <span class="navbar-text">
+        <div class="container mr-3">
+          <a class="nav-link" href="/user/{{ user['user_id'] }}"
+            ><img
+              src="/static/user.png"
+              alt=""
+              width="30"
+              height="30"
+              class="d-inline-block align-bottom"
+            />
+            <span class="site-name fs-5">{{ user['user_name'] }}</span></a
+          >
+          Tasks Pending {{ count }}
+        </div>
+      </span>
+    </nav>
+
+    <div class="container">
+      {% if user['lists']|length==0 %}
+      <div class="d-flex justify-content-center text-center mt-3">
+        <h3>No Projects Added</h3>
+      </div>
+
+      {% else %}
+      <div class="container px-4 board mt-2">
+        <div class="row row1 g-2">
+          {% for x in user['lists'] %}
+
+          <div class="col-sm-4 luck">
+            <div class="p-3 border bg-light">
+              <div class="container pb-3 list-header">
+                <div class="row">
+                  <div
+                    class="col-sm-8"
+                    style="font-size: x-large; overflow: scroll"
+                  >
+                    {{ x['list_name'] }}
+                  </div>
+                  <div class="col-sm-4">
+                    <a
+                      class="btn btn-outline-primary"
+                      type="button"
+                      title=" Edit "
+                      href="#Modal4{{ x['list_id'] }}"
+                      data-bs-toggle="modal"
+                      ><i class="bi bi-pencil"></i>
+                    </a>
+
+                    <!-- Modal -->
+                    <div
+                      class="modal fade"
+                      id="Modal4{{ x['list_id'] }}"
+                      tabindex="-1"
+                      aria-labelledby="ModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="ModalLabel">
+                              Edit List
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <!-- Edit list form -->
+                            <form
+                              action="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ x['list_name'] }}/edit-list"
+                              method="POST"
+                              id="edit-list-form"
+                            >
+                              <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  name="name"
+                                  id="input{{ x['list_id'] }}"
+                                  required
+                                />
+                                <div
+                                  class="error"
+                                  id="error{{x['list_id']}}"
+                                ></div>
+                              </div>
+
+                              <div class="modal-footer">
+                                <button
+                                  type="button"
+                                  class="btn btn-secondary"
+                                  data-bs-dismiss="modal"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  type="submit"
+                                  class="btn btn-primary"
+                                  value="submit"
+                                  onclick="validate(event,'input{{ x.list_id }}','error{{ x.list_id }}')"
+                                >
+                                  Save changes
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {% if user['lists']|length==1 %}
+
+                    <a
+                      href="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/delete"
+                      class="btn btn-outline-danger"
+                      type="button"
+                      title=" Delete "
+                      ><i class="bi bi-x-lg"></i>
+                    </a>
+
+                    {% else %}
+
+                    <a
+                      href="#Modal5{{ x['list_id'] }}"
+                      class="btn btn-outline-danger"
+                      type="button"
+                      title=" Delete "
+                      data-bs-toggle="modal"
+                      ><i class="bi bi-x-lg"></i>
+                    </a>
+
+                    <!-- Modal -->
+                    <div
+                      class="modal fade"
+                      id="Modal5{{ x['list_id'] }}"
+                      tabindex="-1"
+                      aria-labelledby="ModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="ModalLabel">
+                              Remove List
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <!-- Remove list -->
+                            <form
+                              action="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/delete"
+                              method="POST"
+                              id="remove-list-form"
+                              autocomplete="off"
+                            >
+                              <h5>
+                                Do you want move the cards present(if any) to
+                                other list ?
+                              </h5>
+
+                              <div class="form-check">
+                                <input
+                                  onclick="document.getElementById('myinput{{ x.list_id | tojson | safe }}').disabled = false;document.getElementById('myinput{{ x.list_id | tojson | safe }}').required = true;"
+                                  class="form-check-input"
+                                  type="radio"
+                                  name="exampleRadios"
+                                  id="exampleRadios1"
+                                  value="option1"
+                                />
+                                <label
+                                  class="form-check-label"
+                                  for="exampleRadios1"
+                                >
+                                  Yes
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input
+                                  onclick="document.getElementById('myinput{{ x.list_id | tojson | safe }}').value = '';document.getElementById('myinput{{ x.list_id | tojson | safe }}').disabled = true;"
+                                  class="form-check-input"
+                                  type="radio"
+                                  name="exampleRadios"
+                                  id="exampleRadios2"
+                                  value="option2"
+                                  checked
+                                />
+                                <label
+                                  class="form-check-label"
+                                  for="exampleRadios2"
+                                >
+                                  No
+                                </label>
+                              </div>
+
+                              <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  name="list_name"
+                                  disabled
+                                  id="myinput{{ x['list_id'] }}"
+                                  placeholder="New List Name"
+                                />
+                                <div
+                                  class="error"
+                                  id="myerror{{ x.list_id }}"
+                                ></div>
+                              </div>
+
+                              <div class="modal-footer">
+                                <button
+                                  type="button"
+                                  class="btn btn-secondary"
+                                  data-bs-dismiss="modal"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  type="submit"
+                                  class="btn btn-primary"
+                                  value="submit"
+                                  onclick="revalidate(event,0,'myinput{{ x.list_id }}','myerror{{ x.list_id }}','{{ x.list_id }}',0)"
+                                >
+                                  Save changes
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="line row gy-2">
+                {% for y in x['cards'] %} {% if y['late']==1 %} {% set color =
+                "text-white bg-danger" %} {% set status = "Missed Deadline" %}
+                {% elif y['completed_flag']==1 %} {% set color = "text-white
+                bg-success" %} {% set status = "Completed" %} {% else %} {% set
+                color = "text-dark bg-warning" %} {% set status = "To do" %} {%
+                endif %}
+                <div class="card col-sm-12" title="{{ status }}">
+                  <h5 class="card-header  mt-2 {{ color }}">
+                    {{ y['title'] }}
+                  </h5>
+                  <div class="card-body pb-0">
+                    <p class="card-text1">{{ y['content'] }}</p>
+                    <p class="card-text">
+                      Deadline: {{ y['deadline'] }} IST <br />
+                    </p>
+
+                    <a
+                      type="button"
+                      class="btn btn-outline-success mb-3"
+                      data-bs-toggle="modal"
+                      href="#Modal3{{ y.card_id }}"
+                      ><i class="bi bi-pencil"> Edit</i></a
+                    >
+
+                    <!-- Modal -->
+                    <div
+                      class="modal fade"
+                      id="Modal3{{ y.card_id }}"
+                      tabindex="-1"
+                      aria-labelledby="ModalLabe3"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Edit card</h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <!-- Edit card form -->
+                            <form
+                              action="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ y['card_id'] }}/edit-card"
+                              method="POST"
+                              id="edit-card-form"
+                            >
+                              <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  name="title"
+                                  id="mytitle{{ y['card_id'] }}"
+                                  required
+                                />
+                              </div>
+                              <div class="mb-3">
+                                <label class="form-label">Content</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  name="content"
+                                />
+                              </div>
+                              <div class="mb-3">
+                                <label class="form-label">Deadline</label>
+                                <input
+                                  type="text"
+                                  title="YYYY-MM-DD"
+                                  class="form-control"
+                                  name="deadline"
+                                  placeholder="YYYY-MM-DD"
+                                  pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"
+                                  disabled
+                                />
+                              </div>
+
+                              <div class="modal-footer">
+                                <button
+                                  type="button"
+                                  class="btn btn-secondary"
+                                  data-bs-dismiss="modal"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  type="submit"
+                                  class="btn btn-primary"
+                                  value="submit"
+                                  onclick="rerevalidate(event,'mytitle{{ y.card_id }}','{{ x.list_name }}')"
+                                >
+                                  Save changes
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <a
+                      href="#Modal2{{ y['card_id'] }}"
+                      class="btn btn-outline-warning mb-3"
+                      data-bs-toggle="modal"
+                      type="button"
+                      ><i class="bi bi-arrows-move"> Move</i></a
+                    >
+
+                    <div
+                      class="modal fade"
+                      id="Modal2{{ y['card_id'] }}"
+                      tabindex="-1"
+                      aria-labelledby="ModalLabe2"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="ModalLabel">
+                              Move card
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <!-- Card move form -->
+                            <form
+                              action="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ y['card_id'] }}/move"
+                              method="POST"
+                              id="card-move-form"
+                            >
+                              <div class="mb-3">
+                                <label class="form-label">Move to</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  name="new list_name"
+                                  placeholder="List name"
+                                  id="yourinput{{y['card_id']}}"
+                                  required
+                                />
+                                <div
+                                  class="error"
+                                  id="yourerror{{y.card_id}}"
+                                ></div>
+                              </div>
+
+                              <div class="modal-footer">
+                                <button
+                                  type="button"
+                                  class="btn btn-secondary"
+                                  data-bs-dismiss="modal"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  type="submit"
+                                  class="btn btn-primary"
+                                  value="submit"
+                                  onclick="revalidate(event,1,'yourinput{{y.card_id}}','yourerror{{y.card_id}}',0,'{{y.title}}')"
+                                >
+                                  Save changes
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <a
+                      href="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ y['card_id'] }}/delete"
+                      class="btn btn-outline-danger mb-3"
+                      onclick="return confirm('Do you want save the changes?')"
+                      ><i class="bi bi-x-lg"> Delete</i></a
+                    >
+                    {% if y['completed_flag']==0 %}
+                    <a
+                      href="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ y['card_id'] }}/1/flag"
+                      class="btn btn-outline-primary mb-3"
+                      title=" Mark as completed "
+                      ><i class="bi bi-check2"></i
+                    ></a>
+                    {% else %}
+                    <a
+                      href="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ y['card_id'] }}/0/flag"
+                      class="btn btn-outline-primary mb-3"
+                      title=" Mark as not completed "
+                      ><i class="bi bi-check2-all"></i
+                    ></a>
+                    {% endif %}
+                    <div class="card-footer text-muted">
+                      Created on {{ y['create_time'] }} IST<br />Last modified
+                      on {{ y['last_update'] }} IST
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="container p-3">
+                <a
+                  class="btn btn-primary"
+                  type="button"
+                  href="#Modal1{{ x['list_id'] }}"
+                  data-bs-toggle="modal"
+                  >Add Card</a
+                >
+
+                <!-- Modal data-bs-toggle="modal"
+                      data-bs-target="#Modal1"-->
+                <div
+                  class="modal fade"
+                  id="Modal1{{ x['list_id'] }}"
+                  tabindex="-1"
+                  aria-labelledby="ModalLabel"
+                  aria-hidden="true"
+                >
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="ModalLabel">Add card</h5>
+                        <button
+                          type="button"
+                          class="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Add card form -->
+                        <form
+                          action="/user/{{ user['user_id'] }}/{{ x['list_id'] }}/{{ x['list_name'] }}/add-card"
+                          method="POST"
+                          id="add-card-form"
+                        >
+                          <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="title"
+                              id="title{{ x['list_id'] }}"
+                              required
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Content</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="content"
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Deadline</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="deadline"
+                              placeholder="YYYY-MM-DD"
+                              pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"
+                              required
+                            />
+                          </div>
+
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              value="submit"
+                              onclick="rerevalidate(event,'title{{x.list_id}}','{{x.list_name}}')"
+                            >
+                              Save changes
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="Modal"
+      tabindex="-1"
+      aria-labelledby="ModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ModalLabel">Add List</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              onclick="document.getElementById('bname').innerHTML='';"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Add list form -->
+            <form
+              action="/user/{{ user['user_id'] }}"
+              method="POST"
+              id="add-list-form"
+            >
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="name"
+                  id="input"
+                  required
+                />
+                <div class="error" id="bname"></div>
+              </div>
+
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  onclick="document.getElementById('bname').innerHTML='';"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  value="submit"
+                  onclick="validate(event,'input','bname')"
+                >
+                  Save changes
+                </button>
+              </div>
+            </form>
+            <script>
+                function validate(event,id1,id2){
+                  var a = document.getElementById(id1).value;
+                  event.preventDefault();
+                  if(confirm("Do you want to save the changes?") == true){
+                  if(a!=""){
+                  var url = "/user/"+{{user.user_id}}+"/find/"+a;
+                  fetch(url).then(function(response) {
+                    console.log(response.status);
+                    if(response.status==202){
+                      console.log(1);
+                      event.target.onclick  = null;
+                      event.target.click();
+                    }
+                    else{
+                      console.log(-1);
+                      var x = document.getElementById(id2);
+                      x.innerHTML = "This list already exists. Please enter a valid list name";
+                    }
+                  });
+                }
+                }
+                }
+                function revalidate(event,n,id1,id2,l_id,c_name){
+                  var a = document.getElementById(id1).value;
+                  if(confirm("Do you want to save the changes?") == true){
+                  if(a!=""){
+                    event.preventDefault();
+                    var url = "";
+                    if(n==1){
+                      url = "/user/"+{{user.user_id}}+"/"+c_name+"/find/card/"+a;
+                    }
+                    else{
+                      url = "/user/"+{{user.user_id}}+"/"+l_id+"/compare/list/"+a;
+                    }
+                      fetch(url).then(function(response) {
+                      console.log(response.status);
+                      if(response.status==200){
+                        console.log(1);
+                        event.target.onclick  = null;
+                        event.target.click();
+                      }
+                      else if(response.status==202){
+                        console.log(0);//A list cannot have two cards with same name! Edit the title or delete one of the cards and try again.
+                        var x = document.getElementById(id2);
+                        x.innerHTML = "This list doesn't exist. Please enter a valid list name";
+                      }
+                      else{
+                        console.log(-1);
+                        alert("A list cannot have two cards with same name! Edit the title or delete one of the cards and try again.");
+                      }
+                  });
+                }
+                }
+                }
+                function rerevalidate(event,id,l_name){
+                  var a = document.getElementById(id).value;
+                  if(confirm("Do you want to save the changes?") == true){
+                  if(a!=""){
+                    event.preventDefault();
+                    var url = "/user/"+{{user.user_id}}+"/"+a+"/find/card/"+l_name;
+                    fetch(url).then(function(response) {
+                      console.log(response.status);
+                      if(response.status==200){
+                        console.log(1);
+                        event.target.onclick  = null;
+                        event.target.click();
+                      }
+                      else{
+                        console.log(-1);
+                        alert("A list cannot have two cards with same name! Edit the title or delete one of the cards and try again.");
+                      }
+                  });
+                  }
+                }
+              }
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

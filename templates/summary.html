@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+      crossorigin="anonymous"
+    />
+    <title>User</title>
+    <style>
+      .card-text {
+        height: 50px;
+        overflow: scroll;
+      }
+      .line {
+        height: 75vh;
+        overflow: scroll;
+      }
+      .luck {
+        height: 69vh;
+        display:inline-block;
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+      }
+      .nav-item, .navbar-text {
+        font-size: larger;
+      }
+      nav {
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+      }
+    </style>
+  </head>
+  <body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-1 px-3 sticky-top">
+      
+      <a class="navbar-brand" href="#">
+        <img
+            src="/static/KANBAN3-removebg-preview.png"
+            alt=""
+            width="200"
+            height="70"
+            class="d-inline-block align-center"
+          />
+          
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" href="/user/{{ user["user_id"] }}">Home <span class="sr-only"></span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/user/{{ user["user_id"] }}/summary">Summary</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/api">API</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/">Logout</a>
+          </li>
+        </ul>
+        
+      </div>
+      
+      <span class="navbar-text ">
+        <div class="container mr-3">
+        <a class="nav-link" href="/user/{{ user["user_id"] }}/summary"><img
+        src="/static/user.png"
+        alt=""
+        width="30"
+        height="30"
+        class="d-inline-block align-bottom"
+      />
+      <span class="site-name fs-5" >{{ user["user_name"] }}</span></a>
+       Tasks Pending {{ count }} 
+      </div>
+      </span>
+    </nav>
+    
+    <div class="container">
+      {% if user["lists"]|length==0 %}
+              <div class="d-flex justify-content-center text-center mt-3"><h3>No Projects Added</h3></div>
+
+
+            {% else %}
+          <div class="container px-4 board mt-2 " >
+            
+            <div class="row row1 g-2">
+              {% for x in user["lists"] %}
+
+              <div class="col-sm-4 luck">
+                <div class="p-3 bg-white">
+                  <div class="container pb-3">
+                    <div class="col-sm-8" style="font-size:x-large;overflow: scroll;">
+                    {{ x["list_name"] }}
+                  </div>
+                </div>
+                  
+                  <canvas id="mypieChart{{ x["list_id"] }}" width="400" height="400"></canvas>
+                  
+
+                  <script>
+                    var ctx = document.getElementById('mypieChart{{ x.list_id | tojson | safe }}').getContext('2d');
+                    var k = ({{ ginfo }})
+                    k = k['{{ x.list_id }}'];
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Completed','To Do','Completed Late','Not Completed'],//green  yellow purple red
+                            datasets: [{
+                                label: '# of Votes',
+                                data: [k[1],k[2],k[3],k[4]],
+                                backgroundColor: [
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 99, 132, 1)'
+                                ],
+                                borderColor: [
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 99, 132, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Progress Status',
+                                    font: {
+                                        size: 22
+                                     }
+                                }
+                            }
+                        }
+                    });
+                    </script>
+
+                    
+
+                    <div><canvas id="mybarChart{{ x["list_id"] }}" width="400" height="100" ></canvas></div>
+                    <script>
+                      var ctx1 = document.getElementById('mybarChart{{ x.list_id | tojson | safe }}').getContext('2d');
+                      var k1 = ({{ ginfo }});
+                      k1 = k1['{{ x.list_id }}'];
+                      var k2 = [ k1[1],k1[3]+k1[4],k1[0] ];
+                      console.log(k2)
+                      var myChart = new Chart(ctx1, {
+                          type: 'bar',
+                          data: {
+                              labels: ['Completed','Missed Deadline','Total'],//green  yellow purple red
+                              datasets: [{
+                                  label: '',
+                                  data: k2,
+                                  backgroundColor: [
+                                      'rgba(75, 192, 192, 1)',
+                                      'rgba(255, 99, 132, 1)',
+                                      'rgba(153, 102, 255, 1)'
+                                  ],
+                                  borderColor: [
+                                      'rgba(75, 192, 192, 1)',
+                                      'rgba(255, 99, 132, 1)',
+                                      'rgba(153, 102, 255, 1)'
+                                  ],
+                                  borderWidth: 1
+                              }]
+                          },
+                          options: {
+                            indexAxis: 'y',
+                            plugins:{
+                              legend:{
+                                display: false
+                              }
+                            },
+                            scales: {
+                              xAxes: [{
+                                barPercentage: 0.2
+                              }]
+                            }
+                          }
+                          
+                      });
+                      </script>
+                      
+
+                </div>
+              </div>
+
+              {% endfor %}
+
+            </div>
+        </div>
+            {% endif %}
+          </div>
+          
+    
+  </body>
+</html>
