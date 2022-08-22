@@ -1,0 +1,6 @@
+flask
+flask-SQLAlchemy
+flask-restful
+flask-CORS
+pandas
+openpyxl
